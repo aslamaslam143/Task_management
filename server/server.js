@@ -8,8 +8,6 @@ import taskRoutes from './routes/taskRoutes.js';
 
 dotenv.config();
 
-connectDB();
-
 const app = express();
 
 // Middleware
@@ -18,17 +16,31 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// Connect to DB lazily on each request (serverless-safe, cached)
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        res.status(500).json({ message: 'Database connection failed' });
+    }
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 
-// Base route for minimal check
+// Base route
 app.get('/', (req, res) => {
     res.send('server is running...');
 });
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+export default app;

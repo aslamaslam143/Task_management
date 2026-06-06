@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const API_URL = `${import.meta.env.VITE_API_URL}/auth`;
+    const API_URL = `${(import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')}/auth`;
 
     useEffect(() => {
         const checkLoggedIn = async () => {

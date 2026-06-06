@@ -14,7 +14,7 @@ export const TaskProvider = ({ children }) => {
     const [pagination, setPagination] = useState({ page: 1, limit: 6, totalPages: 1 });
 
     const { user } = useAuth();
-    const API_URL = `${import.meta.env.VITE_API_URL}/tasks`;
+    const API_URL = `${(import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')}/tasks`;
 
     const getAuthHeaders = useCallback(() => {
         if (!user || !user.token) return null;
