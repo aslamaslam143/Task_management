@@ -246,14 +246,29 @@ select option {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes float {
   0% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
   50% { transform: translateY(-10px) rotateX(2deg) rotateY(-1deg); }
   100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
 }
 
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+}
+
 .animate-fade {
   animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .animate-float {
@@ -262,10 +277,37 @@ select option {
   perspective: 1000px;
 }
 
+.hover-glow:hover {
+  animation: pulse-glow 2s infinite;
+}
+
+.btn-primary:active, .btn-secondary:active {
+  transform: scale(0.95);
+}
+
 .glass-card:hover {
-  transform: translateY(-5px) scale(1.01);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.logo-hover:hover {
+  transform: scale(1.05);
+}
+
+.logo-hover:active {
+  transform: scale(0.95);
+}
+
+/* Page Transitions */
+.page-container {
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Specific Task List animations */
+.task-grid > div {
+  animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 0;
 }
 
 /* Task List */

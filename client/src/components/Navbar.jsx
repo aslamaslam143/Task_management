@@ -20,8 +20,9 @@ const Navbar = () => {
 
 
     return (
-        <nav style={styles.nav}>
-            <Link to="/" style={styles.logo}>
+        <nav className="animate-slide-down" style={styles.nav}>
+            <Link to="/" style={styles.logo} className="logo-hover">
+
                 <CheckSquare size={28} color="var(--primary)" />
                 <span style={{ fontWeight: '700', fontSize: '1.2rem' }}>TaskFlow</span>
             </Link>
@@ -80,6 +81,7 @@ const styles = {
         gap: '10px',
         textDecoration: 'none',
         color: 'var(--text-main)',
+        transition: 'transform 0.3s ease',
     },
     links: {
         display: 'flex',
@@ -90,25 +92,31 @@ const styles = {
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
-        color: 'var(--text-soft)',
+        padding: '6px 12px',
+        background: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: '20px',
+        color: 'var(--text-main)',
         fontSize: '0.9rem',
     },
     logoutBtn: {
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
-        padding: '8px 16px',
-        background: 'transparent',
+        padding: '8px 18px',
+        background: 'rgba(244, 63, 94, 0.1)',
         color: 'var(--accent-red)',
-        border: '1px solid var(--accent-red)',
-        borderRadius: '8px',
+        border: '1px solid rgba(244, 63, 94, 0.2)',
+        borderRadius: '10px',
         fontSize: '0.9rem',
+        fontWeight: '600',
         cursor: 'pointer',
+        transition: 'all 0.3s ease',
     },
     link: {
         textDecoration: 'none',
-        color: 'var(--text-main)',
-        fontSize: '0.9rem',
+        color: 'var(--text-soft)',
+        fontSize: '0.95rem',
+        transition: 'color 0.2s ease',
     },
     registerBtn: {
         textDecoration: 'none',
@@ -117,6 +125,8 @@ const styles = {
         padding: '8px 20px',
         borderRadius: '8px',
         fontSize: '0.9rem',
+        fontWeight: '600',
+        boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
     },
     toastOverlay: {
         position: 'fixed',
@@ -127,7 +137,7 @@ const styles = {
     confirmToast: {
         padding: '20px',
         width: '240px',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+        boxShadow: '0 20px 50px rgba(0,0,0,0.4)',
         border: '1px solid var(--primary)',
     }
 };

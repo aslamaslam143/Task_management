@@ -40,7 +40,7 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="container" style={styles.container}>
+        <div className="container page-container" style={styles.container}>
             <div className="app-header" style={styles.header}>
 
                 <div>

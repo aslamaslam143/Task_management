@@ -26,7 +26,8 @@ const Register = () => {
 
 
     return (
-        <div style={styles.container}>
+        <div style={styles.container} className="page-container">
+
             <div className="glass-card animate-fade animate-float" style={styles.card}>
                 <div style={styles.header}>
                     <h1 style={styles.title}>Create Account</h1>
