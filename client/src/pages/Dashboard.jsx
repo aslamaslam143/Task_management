@@ -1,247 +1,226 @@
-import { useState, useEffect, useContext } from 'react';
-import { TaskContext } from '../context/TaskContext';
-import TaskCard from '../components/TaskCard';
+import { useState,useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useTasks } from '../context/TaskContext';
 import TaskForm from '../components/TaskForm';
-import { Plus, Search, Briefcase, CheckCircle2, Clock3, BarChart3 } from 'lucide-react';
+import { FiLogOut, FiPlus, FiEdit2, FiTrash2, FiCheckCircle, FiCircle, FiCalendar, FiSearch } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 
 const Dashboard = () => {
-    const { tasks, stats, loading, pagination, fetchTasks, fetchStats } = useContext(TaskContext);
-    const [showForm, setShowForm] = useState(false);
+    const { user, logout } = useAuth();
+    const { tasks, loading, stats, pagination, toggleStatus, deleteTask, fetchTasks } = useTasks();
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
-    const [filters, setFilters] = useState({
-        search: '',
-        status: '',
-        priority: '',
-        sort: 'newest',
-        page: 1,
-    });
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sort, setSort] = useState('newest');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [priorityFilter, setPriorityFilter] = useState('');
+    const [page, setPage] = useState(1);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     useEffect(() => {
-        fetchTasks(filters);
-        fetchStats();
-    }, [filters, fetchTasks, fetchStats]);
+        const timer = setTimeout(() => {
+            fetchTasks({ search: searchQuery, sort, status: statusFilter, priority: priorityFilter, page });
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery, sort, statusFilter, priorityFilter, page, fetchTasks]);
 
-    const handleSearchChange = (e) => {
-        setFilters({ ...filters, search: e.target.value, page: 1 });
-    };
-
-    const handleFilterChange = (e) => {
-        setFilters({ ...filters, [e.target.name]: e.target.value, page: 1 });
-    };
-
-    const handleEdit = (task) => {
+    const onEdit = (task) => {
         setEditingTask(task);
-        setShowForm(true);
+        setIsModalOpen(true);
     };
 
-    const handleAdd = () => {
-        setEditingTask(null);
-        setShowForm(true);
+    const onDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this task?')) {
+            await deleteTask(id);
+            toast.success('Task deleted');
+        }
+    };
+
+    const onToggleStatus = async (id, currentStatus) => {
+        await toggleStatus(id, currentStatus);
+    };
+
+    const handleLogout = () => {
+        logout();
+        toast.success('Logged out successfully');
     };
 
     return (
-        <div className="container page-container" style={styles.container}>
-            <div className="app-header" style={styles.header}>
-
-                <div>
-                    <h1 style={{fontSize: '2rem', marginBottom: '8px'}}>Task Dashboard</h1>
-                    <p style={{color: 'var(--text-soft)'}}>Manage your workflow and productivity.</p>
+        <>
+            <nav className="navbar">
+                <div className="navbar-brand">TaskGenius</div>
+                <div className="navbar-nav">
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Welcome, {user?.name}</span>
+                    <button className="btn-icon" onClick={() => setShowLogoutConfirm(true)} title="Logout">
+                        <FiLogOut size={20} />
+                    </button>
                 </div>
-                <button onClick={handleAdd} className="btn-primary" style={styles.addBtn}>
-                    <Plus size={20} />
-                    <span>Create Task</span>
-                </button>
-            </div>
+            </nav>
 
-            {/* Stats Section */}
-            <div className="stats-grid" style={styles.statsGrid}>
-                <div className="glass-card animate-fade" style={styles.statCard}>
-                    <div className="stat-icon" style={{...styles.statIcon, background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)'}}><Briefcase size={24} /></div>
+            <main className="dashboard-container">
+                <div className="header-actions mb-4">
+                    <h2>Dashboard Overview</h2>
+                    <button className="btn" style={{ width: 'auto' }} onClick={() => { setEditingTask(null); setIsModalOpen(true); }}>
+                        <FiPlus /> New Task
+                    </button>
+                </div>
 
-                    <div>
-                        <p style={styles.statLabel}>Total Tasks</p>
-                        <h2 style={styles.statValue}>{stats?.totalTasks || 0}</h2>
+                <div className="stats-grid">
+                    <div className="stat-card">
+                        <div className="stat-label">Total Tasks</div>
+                        <div className="stat-value">{stats.total}</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-label">Pending</div>
+                        <div className="stat-value" style={{ color: 'var(--warning)' }}>{stats.pending}</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-label">Completed</div>
+                        <div className="stat-value" style={{ color: 'var(--success)' }}>{stats.completed}</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-label">Completion Progress</div>
+                        <div className="stat-value">{stats.percentage}%</div>
+                        <div style={{ background: 'rgba(255,255,255,0.1)', height: '8px', borderRadius: '4px', marginTop: '1rem', overflow: 'hidden' }}>
+                            <div style={{ width: `${stats.percentage}%`, background: 'var(--gradient)', height: '100%', transition: 'width 0.5s ease' }}></div>
+                        </div>
                     </div>
                 </div>
-                <div className="glass-card animate-fade" style={{...styles.statCard, animationDelay: '0.1s'}}>
-                    <div style={{...styles.statIcon, background: 'rgba(34, 197, 94, 0.1)', color: 'var(--accent-green)'}}><CheckCircle2 size={24} /></div>
-                    <div>
-                        <p style={styles.statLabel}>Completed</p>
-                        <h2 style={styles.statValue}>{stats?.completedTasks || 0}</h2>
+
+                <div style={{ marginTop: '3.5rem', marginBottom: '2rem' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.75rem' }}>Your Tasks</h3>
+                    <div className="filter-bar">
+                        <div style={{ position: 'relative', width: '100%' }}>
+                            <FiSearch style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '16px', color: 'var(--text-secondary)' }} />
+                            <input 
+                                type="text" 
+                                className="search-input" 
+                                placeholder="Search tasks..." 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{ paddingLeft: '3rem' }}
+                            />
+                        </div>
+                        <select className="search-input" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <select className="search-input" value={priorityFilter} onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}>
+                            <option value="">All Priority</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                        <select className="search-input" value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}>
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="pending">Prioritize Pending</option>
+                            <option value="completed">Prioritize Completed</option>
+                        </select>
                     </div>
                 </div>
-                <div className="glass-card animate-fade" style={{...styles.statCard, animationDelay: '0.2s'}}>
-                    <div style={{...styles.statIcon, background: 'rgba(234, 179, 8, 0.1)', color: 'var(--accent-yellow)'}}><Clock3 size={24} /></div>
-                    <div>
-                        <p style={styles.statLabel}>Pending</p>
-                        <h2 style={styles.statValue}>{stats?.pendingTasks || 0}</h2>
-                    </div>
-                </div>
-                <div className="glass-card animate-fade" style={{...styles.statCard, animationDelay: '0.3s'}}>
-                    <div style={{...styles.statIcon, background: 'rgba(56, 189, 248, 0.1)', color: 'var(--accent-blue)'}}><BarChart3 size={24} /></div>
-                    <div>
-                        <p style={styles.statLabel}>Efficiency</p>
-                        <h2 style={styles.statValue}>{stats?.completionPercentage || 0}%</h2>
-                    </div>
-                </div>
-            </div>
-
-            {/* Controls */}
-            <div className="controls-bar" style={styles.controls}>
-                <div className="search-container" style={styles.searchBox}>
-                    <Search size={18} color="var(--text-soft)" />
-                    <input 
-                        type="text" 
-                        placeholder="Search tasks..." 
-                        value={filters.search}
-                        onChange={handleSearchChange}
-                        style={styles.searchInput}
-                    />
-                </div>
-                <div className="filters-group" style={styles.filters}>
-
-                    <select name="status" value={filters.status} onChange={handleFilterChange}>
-                        <option value="">All Status</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Completed">Completed</option>
-                    </select>
-                    <select name="priority" value={filters.priority} onChange={handleFilterChange}>
-                        <option value="">All Priority</option>
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                    </select>
-                    <select name="sort" value={filters.sort} onChange={handleFilterChange}>
-                        <option value="newest">Newest</option>
-                        <option value="oldest">Oldest</option>
-                    </select>
-                </div>
-            </div>
-
-            {/* Task List */}
-            <div className="task-grid" style={styles.taskList}>
 
                 {loading ? (
-                    <div style={styles.loader}>Loading tasks...</div>
-                ) : tasks.length > 0 ? (
-                    tasks.map(task => (
-                        <TaskCard key={task._id} task={task} onEdit={handleEdit} />
-                    ))
-                ) : (
-                    <div className="glass-card" style={styles.emptyState}>
-                        <h3>No tasks found</h3>
-                        <p style={{color: 'var(--text-soft)', marginTop: '8px'}}>Try adjusting your filters or create a new task.</p>
+                    <div className="text-center" style={{ padding: '3rem', color: 'var(--text-secondary)' }}>Loading tasks...</div>
+                ) : tasks.length === 0 ? (
+                    <div className="text-center" style={{ padding: '3rem', background: 'var(--glass-bg)', border: '1px dashed var(--glass-border)', borderRadius: '1rem' }}>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            No tasks found. Try adjusting your filters or search.
+                        </p>
+                        <button className="btn" style={{ width: 'auto', margin: '0 auto' }} onClick={() => { setEditingTask(null); setIsModalOpen(true); }}>
+                            Create your first task
+                        </button>
                     </div>
+                ) : (
+                    <>
+                        <div className="task-grid">
+                            {tasks.map(task => (
+                            <div className="task-card" key={task._id}>
+                                <div className="task-header">
+                                    <div className="task-title" style={{ textDecoration: task.status === 'completed' ? 'line-through' : 'none', opacity: task.status === 'completed' ? 0.6 : 1 }}>
+                                        {task.title}
+                                    </div>
+                                    <span className={`status-badge status-${task.status}`}>{task.status}</span>
+                                </div>
+                                <div className="task-desc">
+                                    {task.description || <span style={{ fontStyle: 'italic', opacity: 0.5 }}>No description provided.</span>}
+                                </div>
+                                <div className="task-footer">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <button className="btn-icon" onClick={() => onToggleStatus(task._id, task.status)}>
+                                            {task.status === 'completed' ? <FiCheckCircle size={18} color="var(--success)" /> : <FiCircle size={18} />}
+                                        </button>
+                                        <span className={`priority-${task.priority.toLowerCase()}`} style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+                                            {task.priority} Priority
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        {task.dueDate && (
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginRight: '0.5rem' }}>
+                                                <FiCalendar /> {new Date(task.dueDate).toLocaleDateString()}
+                                            </span>
+                                        )}
+                                        <button className="btn-icon" onClick={() => onEdit(task)}>
+                                            <FiEdit2 size={16} />
+                                        </button>
+                                        <button className="btn-icon btn-danger" onClick={() => onDelete(task._id)}>
+                                            <FiTrash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        </div>
+                        {pagination && pagination.totalPages > 1 && (
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
+                                <button className="btn" style={{ width: 'auto', background: 'transparent', border: '1px solid var(--glass-border)' }} disabled={page === 1} onClick={() => setPage(page - 1)}>
+                                    Previous
+                                </button>
+                                <span style={{ color: 'var(--text-secondary)' }}>
+                                    Page {page} of {pagination.totalPages}
+                                </span>
+                                <button className="btn" style={{ width: 'auto', background: 'transparent', border: '1px solid var(--glass-border)' }} disabled={page === pagination.totalPages} onClick={() => setPage(page + 1)}>
+                                    Next
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
-            </div>
+            </main>
 
-            {/* Pagination */}
-            {pagination.totalPages > 1 && (
-                <div style={styles.pagination}>
-                    <button 
-                        disabled={filters.page === 1} 
-                        onClick={() => setFilters({...filters, page: filters.page - 1})}
-                        className="btn-secondary"
-                    >Prev</button>
-                    <span style={{color: 'var(--text-soft)'}}>Page {filters.page} of {pagination.totalPages}</span>
-                    <button 
-                        disabled={filters.page === pagination.totalPages} 
-                        onClick={() => setFilters({...filters, page: filters.page + 1})}
-                        className="btn-secondary"
-                    >Next</button>
+            {isModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2 className="mb-4">{editingTask ? 'Edit Task' : 'Create New Task'}</h2>
+                        <TaskForm 
+                            key={editingTask ? editingTask._id : 'new'}
+                            editingTask={editingTask} 
+                            setEditingTask={setEditingTask} 
+                            onClose={() => setIsModalOpen(false)} 
+                        />
+                    </div>
                 </div>
             )}
 
-            {showForm && (
-                <TaskForm 
-                    key={editingTask?._id || 'new'}
-                    task={editingTask} 
-                    onClose={() => setShowForm(false)} 
-                />
+            {showLogoutConfirm && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ textAlign: 'center', maxWidth: '400px' }}>
+                        <h3 className="mb-4">Confirm Logout</h3>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Are you sure you want to log out of your account?</p>
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                            <button className="btn" style={{ background: 'transparent', border: '1px solid var(--glass-border)' }} onClick={() => setShowLogoutConfirm(false)}>
+                                Cancel
+                            </button>
+                            <button className="btn" style={{ background: 'var(--danger-gradient)', color: 'white' }} onClick={handleLogout}>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
-        </div>
+        </>
     );
-};
-
-const styles = {
-    container: {
-        maxWidth: '1200px',
-        margin: '0 auto',
-    },
-    header: {
-        // Handled by .app-header
-    },
-    addBtn: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        padding: '12px 24px',
-    },
-    statsGrid: {
-        // Handled by .stats-grid
-    },
-    statCard: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '20px',
-        padding: '24px',
-    },
-    statIcon: {
-        padding: '12px',
-        borderRadius: '12px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    statLabel: {
-        fontSize: '0.85rem',
-        color: 'var(--text-soft)',
-        marginBottom: '4px',
-    },
-    statValue: {
-        fontSize: '1.5rem',
-        fontWeight: '700',
-    },
-    controls: {
-        // Handled by .controls-bar
-    },
-    searchBox: {
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-        background: 'var(--glass)',
-        border: '1px solid var(--glass-border)',
-        borderRadius: '8px',
-        padding: '0 15px',
-    },
-    searchInput: {
-        background: 'transparent',
-        border: 'none',
-        width: '100%',
-        paddingLeft: '10px',
-    },
-    filters: {
-        // Handled by .filters-group
-    },
-    taskList: {
-        minHeight: '300px',
-    },
-    loader: {
-        textAlign: 'center',
-        padding: '100px',
-        color: 'var(--text-soft)',
-    },
-    emptyState: {
-        textAlign: 'center',
-        padding: '80px',
-    },
-    pagination: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: '20px',
-        marginTop: '40px',
-    }
 };
 
 export default Dashboard;

@@ -1,38 +1,36 @@
 import mongoose from 'mongoose';
 
 const taskSchema = mongoose.Schema(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: 'User',
+    {
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: 'User',
+        },
+        title: {
+            type: String,
+            required: [true, 'Please add a text value'],
+        },
+        description: {
+            type: String,
+        },
+        status: {
+            type: String,
+            enum: ['pending', 'completed'],
+            default: 'pending',
+        },
+        dueDate: {
+            type: Date,
+        },
+        priority: {
+            type: String,
+            enum: ['Low', 'Medium', 'High'],
+            default: 'Medium',
+        },
     },
-    title: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-    },
-    status: {
-      type: String,
-      required: true,
-      enum: ['Pending', 'Completed'],
-      default: 'Pending',
-    },
-    priority: {
-      type: String,
-      required: true,
-      enum: ['Low', 'Medium', 'High'],
-      default: 'Medium',
-    },
-    dueDate: {
-      type: Date,
-    },
-  },
-  {
-    timestamps: true,
-  }
+    {
+        timestamps: true,
+    }
 );
 
 const Task = mongoose.model('Task', taskSchema);

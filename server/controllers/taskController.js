@@ -1,169 +1,173 @@
 import Task from '../models/Task.js';
 
-// @desc    Get all user tasks
+// @desc    Get tasks
 // @route   GET /api/tasks
 // @access  Private
-const getTasks = async (req, res) => {
-  const { search, status, priority, sort, page = 1, limit = 10 } = req.query;
-  const query = { user: req.user._id };
+export const getTasks = async (req, res) => {
+    try {
+        const { status, priority, search, sort, page, limit } = req.query;
 
-  if (search) {
-    query.title = { $regex: search, $options: 'i' };
-  }
-  if (status) {
-    query.status = status;
-  }
-  if (priority) {
-    query.priority = priority;
-  }
+        const query = { user: req.user.id };
 
-  let sortQuery = { createdAt: -1 };
-  if (sort === 'oldest') sortQuery = { createdAt: 1 };
-  if (sort === 'newest') sortQuery = { createdAt: -1 };
+        if (status) query.status = status;
+        if (priority) query.priority = priority;
+        if (search) query.title = { $regex: search, $options: 'i' };
 
-  try {
-    const skip = (page - 1) * limit;
-    const totalTasks = await Task.countDocuments(query);
-    const tasks = await Task.find(query)
-      .sort(sortQuery)
-      .skip(skip)
-      .limit(Number(limit));
+        // Pagination calculations
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = parseInt(limit, 10) || 10;
+        const startIndex = (pageNum - 1) * limitNum;
 
-    res.json({
-      tasks,
-      currentPage: Number(page),
-      totalPages: Math.ceil(totalTasks / limit),
-      totalTasks,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+        // Sorting
+        let sortObj = { createdAt: -1 };
+        if (sort === 'oldest') sortObj = { createdAt: 1 };
+        if (sort === 'completed') sortObj = { status: -1, createdAt: -1 };
+        if (sort === 'pending') sortObj = { status: 1, createdAt: -1 };
+
+        const totalFiltered = await Task.countDocuments(query);
+
+        const tasks = await Task.find(query)
+            .sort(sortObj)
+            .skip(startIndex)
+            .limit(limitNum);
+
+        // Calculate global statistics for the user
+        const allUserTasks = await Task.find({ user: req.user.id });
+        const total = allUserTasks.length;
+        const completed = allUserTasks.filter(t => t.status === 'completed').length;
+        const pending = allUserTasks.filter(t => t.status === 'pending').length;
+        const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+        res.status(200).json({
+            count: tasks.length,
+            total: totalFiltered,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                totalPages: Math.ceil(totalFiltered / limitNum)
+            },
+            stats: {
+                total,
+                completed,
+                pending,
+                percentage
+            },
+            data: tasks
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
-// @desc    Create a new task
+// @desc    Get single task
+// @route   GET /api/tasks/:id
+// @access  Private
+export const getTask = async (req, res) => {
+    try {
+        const task = await Task.findById(req.params.id);
+
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        // Make sure the logged in user matches the task user
+        if (task.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: 'User not authorized' });
+        }
+
+        res.status(200).json(task);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Create task
 // @route   POST /api/tasks
 // @access  Private
-const createTask = async (req, res) => {
-  const { title, description, priority, dueDate } = req.body;
+export const createTask = async (req, res) => {
+    try {
+        const { title, description, status, dueDate, priority } = req.body;
 
-  if (!title) {
-    res.status(400).json({ message: 'Title is required' });
-    return;
-  }
+        if (!title) {
+            return res.status(400).json({ message: 'Please add a title' });
+        }
 
-  try {
-    const task = new Task({
-      user: req.user._id,
-      title,
-      description,
-      priority,
-      dueDate,
-    });
+        const task = await Task.create({
+            title,
+            description,
+            status,
+            dueDate,
+            priority,
+            user: req.user.id,
+        });
 
-    const createdTask = await task.save();
-    res.status(201).json(createdTask);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+        res.status(201).json(task);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
-// @desc    Update a task
+// @desc    Update task
 // @route   PUT /api/tasks/:id
 // @access  Private
-const updateTask = async (req, res) => {
-  const { title, description, priority, dueDate, status } = req.body;
-
-  try {
-    const task = await Task.findById(req.params.id);
-
-    if (task) {
-      if (task.user.toString() !== req.user._id.toString()) {
-        res.status(401).json({ message: 'Not authorized' });
-        return;
-      }
-
-      task.title = title || task.title;
-      task.description = description || task.description;
-      task.priority = priority || task.priority;
-      task.dueDate = dueDate || task.dueDate;
-      task.status = status || task.status;
-
-      const updatedTask = await task.save();
-      res.json(updatedTask);
-    } else {
-      res.status(404).json({ message: 'Task not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// @desc    Delete a task
-// @route   DELETE /api/tasks/:id
-// @access  Private
-const deleteTask = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id);
-
-    if (task) {
-      if (task.user.toString() !== req.user._id.toString()) {
-        res.status(401).json({ message: 'Not authorized' });
-        return;
-      }
-
-      await task.deleteOne();
-      res.json({ message: 'Task removed' });
-    } else {
-      res.status(404).json({ message: 'Task not found' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// @desc    Toggle task status
+// @desc    Patch task status
 // @route   PATCH /api/tasks/:id/status
 // @access  Private
-const toggleTaskStatus = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id);
+export const updateTask = async (req, res) => {
+    try {
+        const task = await Task.findById(req.params.id);
 
-    if (task) {
-      if (task.user.toString() !== req.user._id.toString()) {
-        res.status(401).json({ message: 'Not authorized' });
-        return;
-      }
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
 
-      task.status = task.status === 'Pending' ? 'Completed' : 'Pending';
-      const updatedTask = await task.save();
-      res.json(updatedTask);
-    } else {
-      res.status(404).json({ message: 'Task not found' });
+        // Check for user
+        if (!req.user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+
+        // Make sure the logged in user matches the task user
+        if (task.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: 'User not authorized' });
+        }
+
+        const updatedTask = await Task.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+
+        res.status(200).json(updatedTask);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
 };
 
-// @desc    Get dashboard statistics
-// @route   GET /api/tasks/stats
+// @desc    Delete task
+// @route   DELETE /api/tasks/:id
 // @access  Private
-const getTaskStats = async (req, res) => {
-  try {
-    const totalTasks = await Task.countDocuments({ user: req.user._id });
-    const completedTasks = await Task.countDocuments({ user: req.user._id, status: 'Completed' });
-    const pendingTasks = await Task.countDocuments({ user: req.user._id, status: 'Pending' });
-    const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+export const deleteTask = async (req, res) => {
+    try {
+        const task = await Task.findById(req.params.id);
 
-    res.json({
-      totalTasks,
-      completedTasks,
-      pendingTasks,
-      completionPercentage: Math.round(completionPercentage),
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        // Check for user
+        if (!req.user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+
+        // Make sure the logged in user matches the task user
+        if (task.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: 'User not authorized' });
+        }
+
+        await task.deleteOne();
+
+        res.status(200).json({ id: req.params.id });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
-
-export { getTasks, createTask, updateTask, deleteTask, toggleTaskStatus, getTaskStats };

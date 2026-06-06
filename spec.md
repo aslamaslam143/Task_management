@@ -8,7 +8,7 @@ Tech Stack:
 - Backend: Node.js, Express.js
 - Database: MongoDB Atlas with Mongoose
 - Authentication: JWT + bcryptjs
-- Deployment Ready: Vercel (Frontend) and Vercel (Backend)
+- Deployment Ready: Vercel (Frontend) and Render (Backend)
 
 Application Features:
 
@@ -172,7 +172,7 @@ Generate:
 11. Full CSS Styling
 12. Environment Variable Setup
 13. GitHub Deployment Instructions
-14. vercel Deployment Instructions
+14. Render Deployment Instructions
 15. Vercel Deployment Instructions
 16. README.md
 

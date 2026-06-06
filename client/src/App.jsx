@@ -1,39 +1,38 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthProvider';
-import { TaskProvider } from './context/TaskProvider';
-import Navbar from './components/Navbar';
-import Dashboard from './pages/Dashboard';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import ProtectedRoute from './components/ProtectedRoute';
-import { Toaster } from 'react-hot-toast';
+import Dashboard from './pages/Dashboard';
 
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <div>Loading...</div>; // Could replace with a skeleton later
+  if (!user) return <Navigate to="/login" />;
+  return children;
+};
 
 function App() {
-    return (
-        <AuthProvider>
-            <TaskProvider>
-                <Router>
-                    <Toaster position="top-center" reverseOrder={false} />
-                    <Navbar />
-
-                    <Routes>
-                        <Route 
-                            path="/" 
-                            element={
-                                <ProtectedRoute>
-                                    <Dashboard />
-                                </ProtectedRoute>
-                            } 
-                        />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="*" element={<div style={{textAlign: 'center', padding: '100px'}}><h1>404 Page Not Found</h1></div>} />
-                    </Routes>
-                </Router>
-            </TaskProvider>
-        </AuthProvider>
-    );
+  return (
+    <Router>
+      <Toaster position="top-right" toastOptions={{
+        style: { background: '#1e212c', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
+      }} />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;
