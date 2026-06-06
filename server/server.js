@@ -24,7 +24,7 @@ app.use('/api/tasks', taskRoutes);
 
 // Base route for minimal check
 app.get('/', (req, res) => {
-    res.send('API is running...');
+    res.send('server is running...');
 });
 
 const PORT = process.env.PORT || 5000;
