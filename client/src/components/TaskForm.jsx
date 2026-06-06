@@ -35,8 +35,10 @@ const TaskForm = ({ task, onClose }) => {
                 </div>
                 <form onSubmit={handleSubmit} style={styles.form}>
                     <div style={styles.inputGroup}>
-                        <label>Title</label>
+                        <label htmlFor="title">Title</label>
                         <input
+                            id="title"
+                            name="title"
                             type="text"
                             placeholder="Enter task title"
                             value={formData.title}
@@ -44,19 +46,25 @@ const TaskForm = ({ task, onClose }) => {
                             required
                         />
                     </div>
+
                     <div style={styles.inputGroup}>
-                        <label>Description (Optional)</label>
+                        <label htmlFor="description">Description (Optional)</label>
                         <textarea
+                            id="description"
+                            name="description"
                             placeholder="Add details..."
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             rows="3"
                         />
                     </div>
+
                     <div style={styles.row}>
                         <div style={styles.inputGroup}>
-                            <label>Priority</label>
+                            <label htmlFor="priority">Priority</label>
                             <select
+                                id="priority"
+                                name="priority"
                                 value={formData.priority}
                                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                             >
@@ -65,14 +73,18 @@ const TaskForm = ({ task, onClose }) => {
                                 <option value="High">High</option>
                             </select>
                         </div>
+
                         <div style={styles.inputGroup}>
-                            <label>Due Date</label>
+                            <label htmlFor="dueDate">Due Date</label>
                             <input
+                                id="dueDate"
+                                name="dueDate"
                                 type="date"
                                 value={formData.dueDate}
                                 onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                             />
                         </div>
+
                     </div>
                     <button type="submit" className="btn-primary" style={styles.submitBtn}>
                         {task ? 'Update Task' : 'Create Task'}

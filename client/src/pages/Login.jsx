@@ -33,33 +33,41 @@ const Login = () => {
                 <form onSubmit={handleSubmit} style={styles.form}>
 
                     <div style={styles.inputGroup}>
-                        <label style={styles.label}>Email Address</label>
+                        <label htmlFor="email" style={styles.label}>Email Address</label>
                         <div style={styles.inputWrapper}>
                             <Mail size={18} color="var(--text-soft)" />
                             <input 
+                                id="email"
+                                name="email"
                                 type="email" 
                                 placeholder="name@company.com" 
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required 
                                 style={styles.input}
+                                autoComplete="email"
                             />
                         </div>
                     </div>
+
                     <div style={styles.inputGroup}>
-                        <label style={styles.label}>Password</label>
+                        <label htmlFor="password" style={styles.label}>Password</label>
                         <div style={styles.inputWrapper}>
                             <Lock size={18} color="var(--text-soft)" />
                             <input 
+                                id="password"
+                                name="password"
                                 type="password" 
                                 placeholder="••••••••" 
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required 
                                 style={styles.input}
+                                autoComplete="current-password"
                             />
                         </div>
                     </div>
+
                     <button type="submit" disabled={loading} className="btn-primary" style={styles.submitBtn}>
                         {loading ? 'Logging in...' : 'Sign In'}
                         {!loading && <ArrowRight size={18} />}

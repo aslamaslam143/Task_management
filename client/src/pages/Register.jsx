@@ -35,47 +35,59 @@ const Register = () => {
                 <form onSubmit={handleSubmit} style={styles.form}>
 
                     <div style={styles.inputGroup}>
-                        <label style={styles.label}>Full Name</label>
+                        <label htmlFor="name" style={styles.label}>Full Name</label>
                         <div style={styles.inputWrapper}>
                             <User size={18} color="var(--text-soft)" />
                             <input 
+                                id="name"
+                                name="name"
                                 type="text" 
                                 placeholder="John Doe" 
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 required 
                                 style={styles.input}
+                                autoComplete="name"
                             />
                         </div>
                     </div>
+
                     <div style={styles.inputGroup}>
-                        <label style={styles.label}>Email Address</label>
+                        <label htmlFor="email" style={styles.label}>Email Address</label>
                         <div style={styles.inputWrapper}>
                             <Mail size={18} color="var(--text-soft)" />
                             <input 
+                                id="email"
+                                name="email"
                                 type="email" 
                                 placeholder="name@company.com" 
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required 
                                 style={styles.input}
+                                autoComplete="email"
                             />
                         </div>
                     </div>
+
                     <div style={styles.inputGroup}>
-                        <label style={styles.label}>Password</label>
+                        <label htmlFor="password" style={styles.label}>Password</label>
                         <div style={styles.inputWrapper}>
                             <Lock size={18} color="var(--text-soft)" />
                             <input 
+                                id="password"
+                                name="password"
                                 type="password" 
                                 placeholder="••••••••" 
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required 
                                 style={styles.input}
+                                autoComplete="new-password"
                             />
                         </div>
                     </div>
+
                     <button type="submit" disabled={loading} className="btn-primary" style={styles.submitBtn}>
                         {loading ? 'Creating Account...' : 'Get Started'}
                         {!loading && <ArrowRight size={18} />}
