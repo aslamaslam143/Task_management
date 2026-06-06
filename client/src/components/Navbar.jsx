@@ -64,13 +64,14 @@ const Navbar = () => {
 
 const styles = {
     nav: {
-        height: '70px',
+        height: '74px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 5%',
-        background: 'var(--glass)',
-        borderBottom: '1px solid var(--glass-border)',
+        background: 'rgba(15, 23, 42, 0.7)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
         position: 'sticky',
         top: 0,
         zIndex: 100,
