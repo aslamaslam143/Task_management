@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { TaskProvider } from './context/TaskContext';
+import { AuthProvider } from './context/AuthProvider';
+import { TaskProvider } from './context/TaskProvider';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
