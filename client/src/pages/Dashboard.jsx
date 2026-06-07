@@ -49,17 +49,29 @@ const Dashboard = () => {
         <>
             <nav className="navbar">
                 <div className="navbar-brand">TaskGenius</div>
-                <div className="navbar-nav">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
-                        <div style={{ padding: '5px', borderRadius: '50%', background: 'rgba(0, 242, 254, 0.1)', color: 'var(--accent)', display: 'flex' }}>
-                            <FiUser size={16} />
+                    <div className="user-profile">
+                        <div className="user-avatar">
+                            <FiUser size={14} />
                         </div>
-                        <span style={{ fontSize: '0.9rem' }}>Welcome, {user?.name}</span>
+                        <div className="user-info">
+                            <span className="user-name">{user?.name}</span>
+                            <button className="logout-link" onClick={() => setShowLogoutConfirm(!showLogoutConfirm)}>
+                                <FiLogOut size={12} /> Logout
+                            </button>
+                        </div>
+                        
+                        {showLogoutConfirm && (
+                            <div className="logout-popover">
+                                <div className="popover-content">
+                                    <p>Log out of TaskGenius?</p>
+                                    <div className="popover-footer">
+                                        <button className="btn-popover secondary" onClick={() => setShowLogoutConfirm(false)}>Cancel</button>
+                                        <button className="btn-popover danger" onClick={handleLogout}>Logout</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    <button className="btn-icon" onClick={() => setShowLogoutConfirm(true)} title="Logout">
-                        <FiLogOut size={20} />
-                    </button>
-                </div>
             </nav>
 
             <main className="dashboard-container">
@@ -231,38 +243,7 @@ const Dashboard = () => {
                 </div>
             )}
 
-            {showLogoutConfirm && (
-                <div className="modal-overlay">
-                    <div className="modal-content" style={{ textAlign: 'center', maxWidth: '420px', padding: '3rem 2rem' }}>
-                        <div style={{ 
-                            width: '80px', 
-                            height: '80px', 
-                            background: 'rgba(255, 8, 68, 0.1)', 
-                            borderRadius: '50%', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center', 
-                            margin: '0 auto 1.5rem',
-                            border: '2px solid rgba(255, 8, 68, 0.2)',
-                            color: 'var(--danger)'
-                        }}>
-                            <FiLogOut size={40} />
-                        </div>
-                        <h2 className="mb-2" style={{ background: 'none', WebkitTextFillColor: 'var(--text-primary)', color: 'var(--text-primary)', fontSize: '1.75rem' }}>Are you sure?</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2.5rem', fontSize: '1.05rem', lineHeight: '1.6' }}>
-                            You are about to log out. You will need to log back in to access your tasks.
-                        </p>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <button className="btn btn-secondary" onClick={() => setShowLogoutConfirm(false)}>
-                                Back
-                            </button>
-                            <button className="btn btn-danger" onClick={handleLogout}>
-                                Logout
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
         </>
     );
 };
