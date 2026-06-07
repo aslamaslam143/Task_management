@@ -187,6 +187,33 @@ a:hover {
   transform: scale(0.98) translateZ(10px);
 }
 
+.btn-danger {
+  background: var(--danger-gradient);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(255, 8, 68, 0.4);
+}
+
+.btn-danger:hover {
+  background: var(--danger-gradient);
+  color: #fff;
+  box-shadow: 0 8px 25px rgba(255, 8, 68, 0.6);
+  transform: translateY(-2px) translateZ(25px);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  box-shadow: none;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--text-secondary);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px) translateZ(25px);
+}
+
 .btn-icon {
   background: transparent;
   color: var(--text-secondary);
@@ -206,13 +233,9 @@ a:hover {
   transform: scale(1.1);
 }
 
-.btn-danger {
+.btn-icon.danger:hover {
   color: var(--danger);
-}
-.btn-danger:hover {
-  background: rgba(255, 8, 68, 0.15);
-  color: var(--danger);
-  box-shadow: 0 0 10px rgba(255, 8, 68, 0.4);
+  background: rgba(255, 8, 68, 0.1);
 }
 
 .btn-success {
@@ -569,6 +592,43 @@ select {
   .header-actions button {
     width: 100% !important;
   }
+}
+
+/* Loading Animations */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  gap: 1.5rem;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
 

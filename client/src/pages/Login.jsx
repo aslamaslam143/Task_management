@@ -9,15 +9,19 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const { loginUser } = useAuth();
     const navigate = useNavigate();
+    const [submitting, setSubmitting] = useState(false);
 
     const onSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
         try {
             await loginUser({ email, password });
             toast.success('Logged in successfully');
             navigate('/');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to login');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -55,7 +59,9 @@ const Login = () => {
                             />
                         </div>
                     </div>
-                    <button type="submit" className="btn">Sign In</button>
+                    <button type="submit" className="btn" disabled={submitting}>
+                        {submitting ? 'Signing In...' : 'Sign In'}
+                    </button>
                 </form>
                 <p className="mt-4" style={{ marginBottom: 0 }}>
                     Don't have an account? <Link to="/register">Create one</Link>

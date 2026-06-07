@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTasks } from '../context/TaskContext';
 import toast from 'react-hot-toast';
+import { FiSave, FiX, FiType, FiAlignLeft, FiFlag, FiCalendar } from 'react-icons/fi';
 
 const TaskForm = ({ editingTask, setEditingTask, onClose }) => {
     const [title, setTitle] = useState(editingTask?.title || '');
@@ -8,9 +9,11 @@ const TaskForm = ({ editingTask, setEditingTask, onClose }) => {
     const [priority, setPriority] = useState(editingTask?.priority || 'Medium');
     const [dueDate, setDueDate] = useState(editingTask?.dueDate ? new Date(editingTask.dueDate).toISOString().split('T')[0] : '');
     const { addTask, updateTask } = useTasks();
+    const [submitting, setSubmitting] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
         try {
             if (editingTask) {
                 await updateTask(editingTask._id, { title, description, priority, dueDate });
@@ -21,15 +24,17 @@ const TaskForm = ({ editingTask, setEditingTask, onClose }) => {
                 toast.success('Task created');
             }
             onClose();
-        } catch (error) {
+        } catch {
             toast.error('Operation failed');
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
             <div className="form-group">
-                <label>Title</label>
+                <label><FiType size={14} style={{ marginRight: '5px' }} /> Title</label>
                 <input 
                     type="text" 
                     value={title} 
@@ -39,7 +44,7 @@ const TaskForm = ({ editingTask, setEditingTask, onClose }) => {
                 />
             </div>
             <div className="form-group">
-                <label>Description (Optional)</label>
+                <label><FiAlignLeft size={14} style={{ marginRight: '5px' }} /> Description (Optional)</label>
                 <textarea 
                     value={description} 
                     onChange={(e) => setDescription(e.target.value)} 
@@ -48,7 +53,7 @@ const TaskForm = ({ editingTask, setEditingTask, onClose }) => {
             </div>
             <div className="flex-between" style={{ gap: '1rem' }}>
                 <div className="form-group" style={{ flex: 1 }}>
-                    <label>Priority</label>
+                    <label><FiFlag size={14} style={{ marginRight: '5px' }} /> Priority</label>
                     <select value={priority} onChange={(e) => setPriority(e.target.value)}>
                         <option value="Low">Low</option>
                         <option value="Medium">Medium</option>
@@ -56,7 +61,7 @@ const TaskForm = ({ editingTask, setEditingTask, onClose }) => {
                     </select>
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                    <label>Due Date</label>
+                    <label><FiCalendar size={14} style={{ marginRight: '5px' }} /> Due Date</label>
                     <input 
                         type="date" 
                         value={dueDate} 
@@ -64,12 +69,12 @@ const TaskForm = ({ editingTask, setEditingTask, onClose }) => {
                     />
                 </div>
             </div>
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="button" className="btn" style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }} onClick={onClose}>
-                    Cancel
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1.5rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={onClose}>
+                    <FiX /> Cancel
                 </button>
-                <button type="submit" className="btn">
-                    {editingTask ? 'Update Task' : 'Create Task'}
+                <button type="submit" className="btn" disabled={submitting}>
+                    <FiSave /> {submitting ? 'Saving...' : (editingTask ? 'Update' : 'Create')}
                 </button>
             </div>
         </form>

@@ -2,7 +2,7 @@ import { useState,useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTasks } from '../context/TaskContext';
 import TaskForm from '../components/TaskForm';
-import { FiLogOut, FiPlus, FiEdit2, FiTrash2, FiCheckCircle, FiCircle, FiCalendar, FiSearch } from 'react-icons/fi';
+import { FiLogOut, FiPlus, FiEdit2, FiTrash2, FiCheckCircle, FiCircle, FiCalendar, FiSearch, FiList, FiClock, FiActivity, FiUser } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const Dashboard = () => {
@@ -50,7 +50,12 @@ const Dashboard = () => {
             <nav className="navbar">
                 <div className="navbar-brand">TaskGenius</div>
                 <div className="navbar-nav">
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Welcome, {user?.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
+                        <div style={{ padding: '5px', borderRadius: '50%', background: 'rgba(0, 242, 254, 0.1)', color: 'var(--accent)', display: 'flex' }}>
+                            <FiUser size={16} />
+                        </div>
+                        <span style={{ fontSize: '0.9rem' }}>Welcome, {user?.name}</span>
+                    </div>
                     <button className="btn-icon" onClick={() => setShowLogoutConfirm(true)} title="Logout">
                         <FiLogOut size={20} />
                     </button>
@@ -67,20 +72,40 @@ const Dashboard = () => {
 
                 <div className="stats-grid">
                     <div className="stat-card">
-                        <div className="stat-label">Total Tasks</div>
-                        <div className="stat-value">{stats.total}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                                <div className="stat-label">Total Tasks</div>
+                                <div className="stat-value">{stats.total}</div>
+                            </div>
+                            <div className="stat-icon" style={{ color: 'var(--accent)' }}><FiList size={24} /></div>
+                        </div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-label">Pending</div>
-                        <div className="stat-value" style={{ color: 'var(--warning)' }}>{stats.pending}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                                <div className="stat-label">Pending</div>
+                                <div className="stat-value" style={{ color: 'var(--warning)' }}>{stats.pending}</div>
+                            </div>
+                            <div className="stat-icon" style={{ color: 'var(--warning)' }}><FiClock size={24} /></div>
+                        </div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-label">Completed</div>
-                        <div className="stat-value" style={{ color: 'var(--success)' }}>{stats.completed}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                                <div className="stat-label">Completed</div>
+                                <div className="stat-value" style={{ color: 'var(--success)' }}>{stats.completed}</div>
+                            </div>
+                            <div className="stat-icon" style={{ color: 'var(--success)' }}><FiCheckCircle size={24} /></div>
+                        </div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-label">Completion Progress</div>
-                        <div className="stat-value">{stats.percentage}%</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                                <div className="stat-label">Efficiency</div>
+                                <div className="stat-value">{stats.percentage}%</div>
+                            </div>
+                            <div className="stat-icon" style={{ color: 'var(--accent)' }}><FiActivity size={24} /></div>
+                        </div>
                         <div style={{ background: 'rgba(255,255,255,0.1)', height: '8px', borderRadius: '4px', marginTop: '1rem', overflow: 'hidden' }}>
                             <div style={{ width: `${stats.percentage}%`, background: 'var(--gradient)', height: '100%', transition: 'width 0.5s ease' }}></div>
                         </div>
@@ -122,7 +147,10 @@ const Dashboard = () => {
                 </div>
 
                 {loading ? (
-                    <div className="text-center" style={{ padding: '3rem', color: 'var(--text-secondary)' }}>Loading tasks...</div>
+                    <div className="loading-container">
+                        <div className="loader"></div>
+                        <div className="loading-text">Fetching Tasks</div>
+                    </div>
                 ) : tasks.length === 0 ? (
                     <div className="text-center" style={{ padding: '3rem', background: 'var(--glass-bg)', border: '1px dashed var(--glass-border)', borderRadius: '1rem' }}>
                         <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
@@ -161,10 +189,10 @@ const Dashboard = () => {
                                                 <FiCalendar /> {new Date(task.dueDate).toLocaleDateString()}
                                             </span>
                                         )}
-                                        <button className="btn-icon" onClick={() => onEdit(task)}>
+                                        <button className="btn-icon" onClick={() => onEdit(task)} title="Edit Task">
                                             <FiEdit2 size={16} />
                                         </button>
-                                        <button className="btn-icon btn-danger" onClick={() => onDelete(task._id)}>
+                                        <button className="btn-icon danger" onClick={() => onDelete(task._id)} title="Delete Task">
                                             <FiTrash2 size={16} />
                                         </button>
                                     </div>
@@ -205,14 +233,30 @@ const Dashboard = () => {
 
             {showLogoutConfirm && (
                 <div className="modal-overlay">
-                    <div className="modal-content" style={{ textAlign: 'center', maxWidth: '400px' }}>
-                        <h3 className="mb-4">Confirm Logout</h3>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Are you sure you want to log out of your account?</p>
-                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                            <button className="btn" style={{ background: 'transparent', border: '1px solid var(--glass-border)' }} onClick={() => setShowLogoutConfirm(false)}>
-                                Cancel
+                    <div className="modal-content" style={{ textAlign: 'center', maxWidth: '420px', padding: '3rem 2rem' }}>
+                        <div style={{ 
+                            width: '80px', 
+                            height: '80px', 
+                            background: 'rgba(255, 8, 68, 0.1)', 
+                            borderRadius: '50%', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            margin: '0 auto 1.5rem',
+                            border: '2px solid rgba(255, 8, 68, 0.2)',
+                            color: 'var(--danger)'
+                        }}>
+                            <FiLogOut size={40} />
+                        </div>
+                        <h2 className="mb-2" style={{ background: 'none', WebkitTextFillColor: 'var(--text-primary)', color: 'var(--text-primary)', fontSize: '1.75rem' }}>Are you sure?</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2.5rem', fontSize: '1.05rem', lineHeight: '1.6' }}>
+                            You are about to log out. You will need to log back in to access your tasks.
+                        </p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <button className="btn btn-secondary" onClick={() => setShowLogoutConfirm(false)}>
+                                Back
                             </button>
-                            <button className="btn" style={{ background: 'var(--danger-gradient)', color: 'white' }} onClick={handleLogout}>
+                            <button className="btn btn-danger" onClick={handleLogout}>
                                 Logout
                             </button>
                         </div>

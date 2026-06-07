@@ -10,15 +10,19 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const { registerUser } = useAuth();
     const navigate = useNavigate();
+    const [submitting, setSubmitting] = useState(false);
 
     const onSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
         try {
             await registerUser({ name, email, password });
             toast.success('Registration successful');
             navigate('/');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to register');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -70,7 +74,9 @@ const Register = () => {
                             />
                         </div>
                     </div>
-                    <button type="submit" className="btn">Sign Up</button>
+                    <button type="submit" className="btn" disabled={submitting}>
+                        {submitting ? 'Signing Up...' : 'Sign Up'}
+                    </button>
                 </form>
                 <p className="mt-4" style={{ marginBottom: 0 }}>
                     Already have an account? <Link to="/login">Sign in</Link>
